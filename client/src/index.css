@@ -1,0 +1,387 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
+:root {
+  /* Primary Colors - Brand Navy (#031838) */
+  --primary-50: #f0f7ff;
+  --primary-100: #e0f2fe;
+  --primary-200: #bae6fd;
+  --primary-300: #7dd3fc;
+  --primary-400: #38bdf8;
+  --primary-500: #0ea5e9;
+  --primary-600: #031838;
+  --primary-700: #021431;
+  --primary-800: #011028;
+  --primary-900: #000c20;
+
+  /* Refined Neutral Palette (Stone/Warm Grey) */
+  --grey-50: #fafaf9;
+  --grey-100: #f5f5f4;
+  --grey-200: #e7e5e4;
+  --grey-300: #d6d3d1;
+  --grey-400: #a8a29e;
+  --grey-500: #78716c;
+  --grey-600: #57534e;
+  --grey-700: #44403f;
+  --grey-800: #292524;
+  --grey-900: #1c1917;
+  --member-text: var(--primary-700);
+
+  --background: #f8fafc;
+  --white: #ffffff;
+  --nav-bg: rgba(255, 255, 255, 0.8);
+  --sidebar-bg: #ffffff;
+  --sidebar-text: #64748b;
+  --sidebar-text-hover: #031838;
+  --sidebar-hover-bg: #f1f5f9;
+  --sidebar-active-bg: #e2e8f0;
+  --sidebar-active-text: #031838;
+  --sidebar-border: #e2e8f0;
+
+  /* Table Specific Colors */
+  --table-header-bg: #f1f5f9;
+  --table-border: #e2e8f0;
+  --cat-yellow: #fef3c7;
+  --cat-green: #dcfce7;
+  --cat-blue: #dbeafe;
+  --cat-orange: #ffedd5;
+  --cat-purple: #ddd6fe;
+  --cat-yellow-text: #92400e;
+  --cat-green-text: #166534;
+  --cat-blue-text: #1e40af;
+  --cat-orange-text: #9a3412;
+  --cat-purple-text: #5b21b6;
+  --input-bg: #f8fafc;
+  --editable-bg: #ffffff;
+  --editable-hover: #f1f5f9;
+
+  /* Utilities */
+  --shadow-1: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-2: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-3: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  --radius: 5px;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --nav-height: 72px;
+}
+
+.dark-theme {
+  --background: #020617;
+  --white: #0f172a;
+  --nav-bg: rgba(15, 23, 42, 0.8);
+  --sidebar-bg: #0f172a;
+  --sidebar-text: #94a3b8;
+  --sidebar-text-hover: #ffffff;
+  --sidebar-hover-bg: #1e293b;
+  --sidebar-active-bg: #334155;
+  --sidebar-active-text: #ffffff;
+  --sidebar-border: #1e293b;
+  --grey-50: #020617;
+  --grey-100: #0f172a;
+  --grey-200: #1e293b;
+  --grey-300: #334155;
+  --grey-400: #475569;
+  --grey-500: #64748b;
+  --grey-600: #94a3b8;
+  --grey-700: #cbd5e1;
+  --grey-800: #e2e8f0;
+  --grey-900: #f8fafc;
+  --member-text: #ffffff;
+  --primary-50: #0f172a;
+  --primary-100: #1e293b;
+
+  --table-header-bg: #1e293b;
+  --table-border: #334155;
+  --cat-yellow: rgba(251, 191, 36, 0.1);
+  --cat-green: rgba(52, 211, 153, 0.1);
+  --cat-blue: rgba(96, 165, 250, 0.1);
+  --cat-orange: rgba(251, 146, 60, 0.1);
+  --cat-purple: rgba(129, 140, 248, 0.1);
+  --cat-yellow-text: #fbbf24;
+  --cat-green-text: #34d399;
+  --cat-blue-text: #60a5fa;
+  --cat-orange-text: #fb923c;
+  --cat-purple-text: #818cf8;
+  --input-bg: #020617;
+  --editable-bg: #0f172a;
+  --editable-hover: #1e293b;
+}
+
+/* Global Dark Theme Overrides for Estimation Calculator */
+.dark-theme .sticky-footer .stat.highlight {
+  background: #0f1729 !important;
+  border: 1px solid #ffffff !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+.dark-theme .sticky-footer .stat.highlight .stat-value,
+.dark-theme .sticky-footer .stat.highlight .stat-label {
+  color: #ffffff !important;
+}
+
+.dark-theme .footer-total,
+.dark-theme .footer-price {
+  color: #ffffff !important;
+  background: #0f1729 !important;
+}
+
+/* Bid Management (Invoices) Overrides */
+.dark-theme .action-link {
+  color: #ffffff !important;
+}
+
+.dark-theme .action-link svg {
+  color: #ffffff !important;
+}
+
+.dark-theme .action-link:hover,
+.dark-theme .action-link:hover svg {
+  color: var(--primary-200) !important;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 110%;
+}
+
+body {
+  font-family: "Roboto", sans-serif;
+  background: var(--background);
+  color: var(--grey-800);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-family: "Roboto", sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+/* Button Component Styles */
+.btn.secondary-btn {
+  color: var(--grey-700);
+  background: transparent;
+  border: 1px solid var(--grey-300);
+}
+
+.btn.secondary-btn::before,
+.btn.secondary-btn::after {
+  background: var(--primary-600);
+}
+
+.btn.secondary-btn:hover {
+  color: white;
+  border-color: var(--primary-600);
+  transform: translateY(-1px);
+}
+
+
+.btn {
+  position: relative;
+  cursor: pointer;
+  color: #ffffff;
+  background: var(--primary-600);
+  border: 2px solid var(--primary-600);
+  border-radius: var(--radius);
+  padding: 0.8rem 2rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  font-family: inherit;
+  box-shadow: var(--shadow-2);
+  text-decoration: none;
+  overflow: hidden;
+  z-index: 1;
+  transition: all 0.4s ease;
+}
+
+.btn::before,
+.btn::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 0;
+  height: 100%;
+  background: #ffffff;
+  transition: all 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+  z-index: -1;
+}
+
+.btn::before {
+  left: 50%;
+}
+
+.btn::after {
+  right: 50%;
+}
+
+.btn:hover::before {
+  left: 0;
+  width: 51%;
+}
+
+.btn:hover::after {
+  right: 0;
+  width: 51%;
+}
+
+.btn:hover {
+  color: #031838;
+  border-color: #031838;
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(3, 24, 56, 0.2);
+}
+
+/* Secondary and Outline buttons use "Closing" animation (Sides to Middle) */
+.btn.outline-btn,
+.btn.secondary-btn {
+  background: transparent;
+  color: var(--primary-600);
+  border: 2px solid var(--primary-600);
+}
+
+.btn.outline-btn::before,
+.btn.secondary-btn::before {
+  left: -51%;
+  width: 51%;
+}
+
+.btn.outline-btn::after,
+.btn.secondary-btn::after {
+  right: -51%;
+  width: 51%;
+}
+
+.btn.outline-btn:hover::before,
+.btn.secondary-btn:hover::before {
+  left: 0;
+}
+
+.btn.outline-btn:hover::after,
+.btn.secondary-btn:hover::after {
+  right: 0;
+}
+
+.btn.outline-btn::before,
+.btn.outline-btn::after,
+.btn.secondary-btn::before,
+.btn.secondary-btn::after {
+  background: var(--primary-600);
+}
+
+.btn.outline-btn:hover,
+.btn.secondary-btn:hover {
+  color: #ffffff;
+  box-shadow: 0 12px 24px rgba(3, 24, 56, 0.3);
+}
+
+/* Icon variant of the button */
+.btn.btn-icon {
+  padding: 0;
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  border-radius: 5px;
+  font-size: 1.1rem;
+}
+
+.btn.btn-icon::before,
+.btn.btn-icon::after {
+  background: var(--primary-600);
+}
+
+.btn.btn-icon:hover {
+  color: #ffffff;
+  border-color: var(--primary-600);
+}
+
+.btn.btn-sm {
+  padding: 0.4rem 1.2rem;
+  font-size: 0.8rem;
+}
+
+
+.dark-theme .btn.btn-icon::before,
+.dark-theme .btn.btn-icon::after {
+  background: #ffffff;
+}
+
+.dark-theme .btn.btn-icon:hover {
+  border-color: #ffffff;
+  color: #031838;
+}
+
+.dark-theme .btn.outline-btn,
+.dark-theme .btn.secondary-btn {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+}
+
+.dark-theme .btn.outline-btn::before,
+.dark-theme .btn.outline-btn::after,
+.dark-theme .btn.secondary-btn::before,
+.dark-theme .btn.secondary-btn::after {
+  background: #ffffff;
+}
+
+.dark-theme .btn.outline-btn:hover,
+.dark-theme .btn.secondary-btn:hover {
+  color: #031838;
+  border-color: #ffffff;
+}
+
+.btn.danger-btn {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+.btn.danger-btn::before,
+.btn.danger-btn::after {
+  background: #ffffff;
+}
+
+.btn.danger-btn:hover {
+  color: #dc2626;
+  border-color: #dc2626;
+}
+
+.dark-theme .btn.danger-btn {
+  background: #ef4444;
+  border-color: #ef4444;
+}
+
+.dark-theme .btn.danger-btn::before,
+.dark-theme .btn.danger-btn::after {
+  background: #ffffff;
+}
+
+.dark-theme .btn.danger-btn:hover {
+  color: #ef4444;
+  border-color: #ffffff;
+}
+
+/* Global Number Input Spin Button Removal */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+
