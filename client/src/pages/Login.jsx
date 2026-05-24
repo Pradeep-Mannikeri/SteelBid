@@ -10,7 +10,7 @@ import { EstimationContext } from "../context/EstimationContext";
 const Login = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
-  const { fetchEstimations } = useContext(EstimationContext);
+  const { loadData } = useContext(EstimationContext);
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -38,7 +38,7 @@ const Login = () => {
         throw new Error(data.msg || "Login failed");
       }
 
-      await fetchEstimations();
+      await loadData();
       navigate("/dashboard");
     } catch (err) {
       setErrorMsg(err.message);
