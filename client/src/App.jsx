@@ -14,6 +14,7 @@ import GetInTouch from "./pages/GetInTouch";
 import Error from "./pages/Error";
 import TotalSheetPlain from "./pages/TotalSheetPlain";
 import { EstimationProvider } from "./context/EstimationContext";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const router = createBrowserRouter([
   {
@@ -68,6 +69,11 @@ const router = createBrowserRouter([
   {
     path: "/register",
     element: <Register />,
+    errorElement: <Error />,
+  },
+  {
+    path: "/admin-dashboard",
+    element: <AdminDashboard />,
     errorElement: <Error />,
   },
 ]);

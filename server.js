@@ -12,9 +12,10 @@ import { fileURLToPath } from "url";
 import authRouter from "./router/authRouter.js";
 import compnayRouter from "./router/compnayRouter.js";
 import estimationRouter from "./router/estimationRouter.js";
+import adminRouter from "./router/adminRouter.js";
 
 // Middlewares
-import { authenticateUser } from "./middleware/authMiddleware.js";
+import { authenticateUser, authorizePermissions } from "./middleware/authMiddleware.js";
 import notFoundMiddleware from "./middleware/notFoundMiddleware.js";
 import errorHandlerMiddleware from "./middleware/errorHandlerMiddleware.js";
 
@@ -39,6 +40,7 @@ app.use(express.static(path.resolve(__dirname, "./client/dist")));
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/compnay", authenticateUser, compnayRouter);
 app.use("/api/v1/estimations", authenticateUser, estimationRouter);
+app.use("/api/v1/admin", authenticateUser, authorizePermissions("admin"), adminRouter);
 
 // Serve the frontend index.html for all other client routes (React Router handles navigation)
 app.get("*", (req, res, next) => {
