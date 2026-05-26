@@ -53,14 +53,16 @@ app.use(errorHandlerMiddleware);
 
 const PORT = parseInt(process.env.PORT, 10) || 5000;
 try {
+  console.log("Connecting to MongoDB...");
   await mongoose.connect(process.env.MONGO_URI);
+  console.log("MongoDB connected successfully!");
   if (!process.env.VERCEL) {
     app.listen(PORT, () => {
       console.log(`Server running on port ${PORT}`);
     });
   }
 } catch (error) {
-  console.log(error);
+  console.log("MongoDB connection error:", error);
   if (!process.env.VERCEL) {
     process.exit(1);
   }
