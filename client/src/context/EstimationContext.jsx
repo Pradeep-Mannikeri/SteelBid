@@ -174,6 +174,7 @@ export const EstimationProvider = ({ children }) => {
         companies,
         currentUser,
         loading,
+        loadData,
         fetchEstimations,
         addEstimation,
         updateEstimation,
