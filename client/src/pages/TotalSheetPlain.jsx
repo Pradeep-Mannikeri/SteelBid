@@ -121,14 +121,20 @@ const TotalSheetPlain = () => {
       try {
         const blob = await pdf(<EstimationPDF data={finalData} />).toBlob();
         const url = URL.createObjectURL(blob);
-        window.open(url, "_blank");
         
-        // Provide feedback
-        if (!readOnly) {
-          triggerToast("Estimation data has been successfully saved to the Bid Management repository!", "success");
-        } else {
-          triggerToast("Exported PDF summary directly from repository!", "success");
-        }
+        // Create a temporary link element to trigger a direct download
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${finalData.id || "Quotation"}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up resource
+        URL.revokeObjectURL(url);
+        
+        // Navigate back to estimations dashboard root
+        navigate("/dashboard/estimations");
       } catch (error) {
         console.error("PDF Generation Error:", error);
         triggerToast("Failed to generate PDF. Please check the console.", "error");
@@ -800,44 +806,47 @@ const Wrapper = styled.section`
 const ToastContainer = styled.div`
   position: fixed;
   top: 30px;
-  right: 30px;
+  left: 50%;
+  transform: translateX(-50%);
   background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.5);
-  padding: 1rem 1.5rem;
+  padding: 1rem 1.75rem;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.05);
   display: flex;
   align-items: center;
   gap: 0.75rem;
   z-index: 9999;
-  animation: slideInToast 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  max-width: 400px;
+  animation: slideDownToast 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  max-width: 90vw;
+  width: fit-content;
 
   &.success {
-    border-left: 4px solid #10b981;
+    border-top: 3px solid #10b981;
     .toast-icon {
       color: #10b981;
     }
   }
 
   &.error {
-    border-left: 4px solid #ef4444;
+    border-top: 3px solid #ef4444;
     .toast-icon {
       color: #ef4444;
     }
   }
 
   .toast-icon {
-    font-size: 1.25rem;
+    font-size: 1.35rem;
     display: grid;
     place-items: center;
   }
 
   .toast-message {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: var(--grey-800);
+    letter-spacing: -0.2px;
   }
 
   body.dark-theme & {
@@ -848,14 +857,14 @@ const ToastContainer = styled.div`
     }
   }
 
-  @keyframes slideInToast {
+  @keyframes slideDownToast {
     from {
       opacity: 0;
-      transform: translateX(40px) translateY(-10px);
+      transform: translate(-50%, -20px);
     }
     to {
       opacity: 1;
-      transform: translateX(0) translateY(0);
+      transform: translate(-50%, 0);
     }
   }
 `;

@@ -4,6 +4,9 @@ dotenv.config();
 
 import express from "express";
 import cookieParser from "cookie-parser";
+import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // Routers
 import authRouter from "./router/authRouter.js";
@@ -17,18 +20,33 @@ import errorHandlerMiddleware from "./middleware/errorHandlerMiddleware.js";
 
 import mongoose from "mongoose";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 
 app.use(cookieParser());
 app.use(express.json());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    credentials: true,
+  }),
+);
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
+app.use(express.static(path.resolve(__dirname, "./client/dist")));
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/compnay", authenticateUser, compnayRouter);
 app.use("/api/v1/estimations", authenticateUser, estimationRouter);
+
+// Serve the frontend index.html for all other client routes (React Router handles navigation)
+app.get("*", (req, res, next) => {
+  if (req.originalUrl.startsWith("/api")) {
+    return next();
+  }
+  res.sendFile(path.resolve(__dirname, "./client/dist/index.html"));
+});
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
@@ -36,10 +54,16 @@ app.use(errorHandlerMiddleware);
 const PORT = parseInt(process.env.PORT, 10) || 5000;
 try {
   await mongoose.connect(process.env.MONGO_URI);
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+  if (!process.env.VERCEL) {
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  }
 } catch (error) {
   console.log(error);
-  process.exit(1);
+  if (!process.env.VERCEL) {
+    process.exit(1);
+  }
 }
+
+export default app;
