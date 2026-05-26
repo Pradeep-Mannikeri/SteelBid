@@ -7,7 +7,7 @@
   "scripts": {
     "setup-project": "npm i && cd client && npm i",
     "setup-production-app": "npm i && cd client && npm i && npm run build",
-    "build": "cd client && npm install && npm run build",
+    "build": "npm run setup-production-app",
     "start": "node server.js",
     "server": "nodemon server",
     "client": "cd client && npm run dev",
