@@ -13,8 +13,8 @@ import {
   FaMoon,
   FaShieldAlt,
 } from "react-icons/fa";
-import logo from "../assets/logo.svg";
-import logoDark from "../assets/logo 2.svg";
+import logo from "../assets/images/logo1.png";
+import logoDark from "../assets/images/logo2.png";
 
 const AdminDashboard = () => {
   const { currentUser, loading: userLoading } = useContext(EstimationContext);
