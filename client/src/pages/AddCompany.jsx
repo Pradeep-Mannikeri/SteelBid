@@ -133,7 +133,7 @@ const AddCompany = () => {
             <thead>
               <tr>
                 <th>Company ID</th>
-                <th>Company Name</th>
+                <th>Fabricator name</th>
                 <th>Location</th>
                 <th>Phone</th>
                 <th>Email</th>
@@ -209,7 +209,7 @@ const AddCompany = () => {
               <div className="modal-body">
                 <div className="form-grid">
                   <div className="form-group half-width">
-                    <label>Company Name</label>
+                    <label>Fabricator name</label>
                     <input
                       type="text"
                       name="companyName"
@@ -337,7 +337,7 @@ const AddCompany = () => {
               <div className="modal-body">
                 <div className="form-grid">
                   <div className="form-group half-width">
-                    <label>Company Name</label>
+                    <label>Fabricator name</label>
                     <input
                       type="text"
                       name="companyName"
@@ -438,7 +438,7 @@ const AddCompany = () => {
             <div className="modal-body">
               <div className="detail-grid">
                 <div className="detail-item">
-                  <label>Company Name</label>
+                  <label>Fabricator name</label>
                   <p>{selectedClient.companyName}</p>
                 </div>
                 <div className="detail-item">

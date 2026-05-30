@@ -1,12 +1,10 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { NavbarWrapper } from '../assets/Wrappers/DashboardWrapper';
-import { FaAlignLeft, FaUserCircle, FaCaretDown, FaSun, FaMoon } from 'react-icons/fa';
-import { useNavigate, Link } from 'react-router-dom';
-import { EstimationContext } from '../context/EstimationContext';
+import React from 'react';
+import { NavbarWrapper } from '../../assets/Wrappers/DashboardWrapper';
+import { FaAlignLeft, FaSun, FaMoon, FaShieldAlt } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
-const Navbar = ({ toggleSidebar, isDarkTheme, toggleTheme }) => {
+const SuperAdminNavbar = ({ toggleSidebar, isDarkTheme, toggleTheme }) => {
   const navigate = useNavigate();
-  const { currentUser } = useContext(EstimationContext);
 
   const handleLogout = async () => {
     try {
@@ -23,15 +21,13 @@ const Navbar = ({ toggleSidebar, isDarkTheme, toggleTheme }) => {
         <button type='button' className='btn btn-icon outline-btn' onClick={toggleSidebar}>
           <FaAlignLeft />
         </button>
-        <div>
-          <h3 className='logo-text'>Dashboard</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--grey-900)' }}>
+          <FaShieldAlt style={{ fontSize: '1.25rem', color: 'var(--primary-600)' }} />
+          <h3 className='logo-text' style={{ margin: 0, fontSize: '1.25rem' }}>
+            Admin Console
+          </h3>
         </div>
         <div className='btn-container' style={{ gap: '0.8rem' }}>
-          {currentUser?.role === 'admin' && (
-            <Link to='/superadmin' className='btn outline-btn' style={{ textDecoration: 'none', padding: '0.5rem 1rem' }}>
-              Admin Console
-            </Link>
-          )}
           <button 
             type='button' 
             className='btn btn-icon outline-btn' 
@@ -49,4 +45,4 @@ const Navbar = ({ toggleSidebar, isDarkTheme, toggleTheme }) => {
   );
 };
 
-export default Navbar;
+export default SuperAdminNavbar;

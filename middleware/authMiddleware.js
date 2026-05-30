@@ -1,5 +1,6 @@
 import { UnauthenticatedError, UnauthorizedError } from "../errors/customErrors.js";
 import { verifyJWT } from "../utils/tokenUtils.js";
+import User from "../models/userModel.js";
 
 export const authenticateUser = async (req, res, next) => {
   const { token } = req.cookies;

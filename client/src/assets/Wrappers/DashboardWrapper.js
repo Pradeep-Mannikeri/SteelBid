@@ -39,6 +39,7 @@ export const NavbarWrapper = styled.nav`
   background: var(--nav-bg);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
   position: sticky;
   top: 0;
   z-index: 50;
@@ -218,6 +219,7 @@ export const SidebarWrapper = styled.aside`
       background: var(--sidebar-bg);
       overflow-y: auto;
       border-right: 1px solid var(--sidebar-border);
+      box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
     }
 
     .close-btn { display: none; }

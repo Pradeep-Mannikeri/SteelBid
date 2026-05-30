@@ -6,16 +6,17 @@ import {
   updateEstimation,
   deleteEstimation,
 } from "../controllers/estimationController.js";
+import { validateEstimationInput } from "../middleware/validationMiddleware.js";
 
 const router = express.Router();
 
 router.route("/")
-  .post(createEstimation)
+  .post(validateEstimationInput, createEstimation)
   .get(getAllEstimations);
 
 router.route("/:id")
   .get(getSingleEstimation)
-  .put(updateEstimation)
+  .put(validateEstimationInput, updateEstimation)
   .delete(deleteEstimation);
 
 export default router;

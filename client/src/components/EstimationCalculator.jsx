@@ -104,22 +104,48 @@ const EstimationCalculator = ({
   projectName,
   projectType,
   onSave,
+  isDemo = false,
+  onSubmitDemo,
 }) => {
-  const [currentStep, setCurrentStep] = useState(1);
   const [currentStepName, setCurrentStepName] = useState("S-1.1");
-  const [savedSteps, setSavedSteps] = useState([]);
+  const [availableSteps, setAvailableSteps] = useState(["S-1.1"]);
+  const [rate, setRate] = useState(projectRate);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
-  const [counts, setCounts] = useState({});
-  const [modelOverrides, setModelOverrides] = useState({});
-  const [detailingOverrides, setDetailingOverrides] = useState({});
-  const [timeMinOverrides, setTimeMinOverrides] = useState({});
+  const handleSubmitClick = async () => {
+    if (isDemo && onSubmitDemo) {
+      const success = await onSubmitDemo();
+      if (success) {
+        setHasSubmitted(true);
+      }
+    } else {
+      setHasSubmitted(true);
+    }
+  };
+  const [stepsData, setStepsData] = useState({
+    "S-1.1": {
+      counts: {},
+      catTotalHoursOverrides: {},
+    },
+  });
 
-  const [catModelingOverrides, setCatModelingOverrides] = useState({});
-  const [catDetailingOverrides, setCatDetailingOverrides] = useState({});
-  const [catTotalHoursOverrides, setCatTotalHoursOverrides] = useState({});
-
-  const handleInputChange = (setter, key, value) => {
-    setter((prev) => ({ ...prev, [key]: value }));
+  const handleInputChange = (field, key, value) => {
+    if (isDemo && hasSubmitted) {
+      setHasSubmitted(false);
+    }
+    setStepsData((prev) => {
+      const stepData = prev[currentStepName] || {};
+      return {
+        ...prev,
+        [currentStepName]: {
+          ...stepData,
+          [field]: {
+            ...(stepData[field] || {}),
+            [key]: value,
+          },
+        },
+      };
+    });
   };
 
   const categories =
@@ -127,10 +153,48 @@ const EstimationCalculator = ({
       ? ["Misc Steel Detailing"]
       : ["Main sheet detailing"];
 
-  let grandTotalModelMin = 0;
-  let grandTotalDetailingMin = 0;
+  const stepsTotals = availableSteps.map((step) => {
+    const sData = stepsData[step] || {};
+    const sCounts = sData.counts || {};
+    const sCatTotalHoursOverrides = sData.catTotalHoursOverrides || {};
 
-  // Render logic remains mostly the same, calculating for the current step
+    let stepModelMin = 0;
+    let stepDetailingMin = 0;
+
+    categories.forEach((category) => {
+      const items = sheetOneWorkList
+        .map((item, idx) => ({ ...item, originalIndex: idx }))
+        .filter((item) => item.category === category);
+      items.forEach((item) => {
+        const count = parseInt(sCounts[item.originalIndex]) || 0;
+        stepModelMin += count * item.baseTimeMin;
+        stepDetailingMin += count * item.baseTimeMin;
+      });
+    });
+
+    const categoryName = categories[0];
+    let stepHours = 0;
+    const over = sCatTotalHoursOverrides[categoryName];
+    if (over !== undefined && over !== "") {
+      stepHours = parseFloat(over) || 0;
+    } else {
+      stepHours = (stepModelMin + stepDetailingMin) / 60;
+    }
+
+    return {
+      stepName: step,
+      hours: stepHours,
+      price: stepHours * rate,
+    };
+  });
+
+  const activeStepTotal = stepsTotals.find((s) => s.stepName === currentStepName) || { hours: 0, price: 0 };
+  const currentHours = activeStepTotal.hours;
+  const currentPrice = activeStepTotal.price;
+
+  const totalProjectHours = stepsTotals.reduce((sum, s) => sum + s.hours, 0);
+  const totalProjectPrice = stepsTotals.reduce((sum, s) => sum + s.price, 0);
+
   const renderTableBody = () => {
     return categories.map((category) => {
       const items = sheetOneWorkList
@@ -140,72 +204,21 @@ const EstimationCalculator = ({
       let catModelMinCalc = 0;
       let catDetailingMinCalc = 0;
 
-      // Pre-calculate category totals
+      const sData = stepsData[currentStepName] || {};
+      const sCounts = sData.counts || {};
+      const sCatTotalHoursOverrides = sData.catTotalHoursOverrides || {};
+
       items.forEach((item) => {
-        const count = parseInt(counts[item.originalIndex]) || 0;
-        const tMin =
-          timeMinOverrides[item.originalIndex] !== undefined
-            ? parseFloat(timeMinOverrides[item.originalIndex]) || 0
-            : item.baseTimeMin;
-
-        const modelVal =
-          modelOverrides[item.originalIndex] !== undefined
-            ? parseFloat(modelOverrides[item.originalIndex]) || 0
-            : count * tMin;
-
-        const detailVal =
-          detailingOverrides[item.originalIndex] !== undefined
-            ? parseFloat(detailingOverrides[item.originalIndex]) || 0
-            : count * tMin;
-
-        catModelMinCalc += modelVal;
-        catDetailingMinCalc += detailVal;
+        const count = parseInt(sCounts[item.originalIndex]) || 0;
+        catModelMinCalc += count * item.baseTimeMin;
+        catDetailingMinCalc += count * item.baseTimeMin;
       });
-
-      const finalCatModelMin =
-        catModelingOverrides[category] !== undefined
-          ? parseFloat(catModelingOverrides[category]) || 0
-          : catModelMinCalc;
-      const finalCatDetailingMin =
-        catDetailingOverrides[category] !== undefined
-          ? parseFloat(catDetailingOverrides[category]) || 0
-          : catDetailingMinCalc;
-
-      grandTotalModelMin += finalCatModelMin;
-      grandTotalDetailingMin += finalCatDetailingMin;
 
       const isMain = category === "Main sheet detailing";
       const catClass = isMain ? "cat-main" : "cat-misc";
 
       return items.map((item, index) => {
-        const countStr =
-          counts[item.originalIndex] !== undefined
-            ? counts[item.originalIndex]
-            : "";
-        const countNum = parseInt(countStr) || 0;
-
-        const tMinStr =
-          timeMinOverrides[item.originalIndex] !== undefined
-            ? timeMinOverrides[item.originalIndex]
-            : item.baseTimeMin;
-        const tMinNum = parseFloat(tMinStr) || 0;
-
-        const autoModelVal = countNum === 0 ? 0 : countNum * tMinNum;
-        const autoDetailVal = countNum === 0 ? 0 : countNum * tMinNum;
-
-        const modelStr =
-          modelOverrides[item.originalIndex] !== undefined
-            ? modelOverrides[item.originalIndex]
-            : countNum === 0
-              ? ""
-              : autoModelVal;
-        const detailStr =
-          detailingOverrides[item.originalIndex] !== undefined
-            ? detailingOverrides[item.originalIndex]
-            : countNum === 0
-              ? ""
-              : autoDetailVal;
-
+        const countStr = sCounts[item.originalIndex] !== undefined ? sCounts[item.originalIndex] : "";
         const isFirstRow = index === 0;
 
         return (
@@ -228,35 +241,7 @@ const EstimationCalculator = ({
                 value={countStr}
                 onChange={(e) =>
                   handleInputChange(
-                    setCounts,
-                    item.originalIndex,
-                    e.target.value,
-                  )
-                }
-              />
-            </td>
-
-            <td className="input-cell editable">
-              <input
-                type="number"
-                value={modelStr}
-                onChange={(e) =>
-                  handleInputChange(
-                    setModelOverrides,
-                    item.originalIndex,
-                    e.target.value,
-                  )
-                }
-              />
-            </td>
-
-            <td className="input-cell editable">
-              <input
-                type="number"
-                value={detailStr}
-                onChange={(e) =>
-                  handleInputChange(
-                    setDetailingOverrides,
+                    "counts",
                     item.originalIndex,
                     e.target.value,
                   )
@@ -265,68 +250,26 @@ const EstimationCalculator = ({
             </td>
 
             {isFirstRow && (
-              <>
-                <td
-                  rowSpan={items.length}
-                  className="input-cell editable merged-input"
-                >
-                  <input
-                    type="number"
-                    value={
-                      catModelingOverrides[category] !== undefined
-                        ? catModelingOverrides[category]
-                        : catModelMinCalc
-                    }
-                    onChange={(e) =>
-                      handleInputChange(
-                        setCatModelingOverrides,
-                        category,
-                        e.target.value,
-                      )
-                    }
-                  />
-                </td>
-                <td
-                  rowSpan={items.length}
-                  className="input-cell editable merged-input"
-                >
-                  <input
-                    type="number"
-                    value={
-                      catDetailingOverrides[category] !== undefined
-                        ? catDetailingOverrides[category]
-                        : catDetailingMinCalc
-                    }
-                    onChange={(e) =>
-                      handleInputChange(
-                        setCatDetailingOverrides,
-                        category,
-                        e.target.value,
-                      )
-                    }
-                  />
-                </td>
-                <td
-                  rowSpan={items.length}
-                  className="input-cell editable merged-input"
-                >
-                  <input
-                    type="number"
-                    value={
-                      catTotalHoursOverrides[category] !== undefined
-                        ? catTotalHoursOverrides[category]
-                        : ((finalCatModelMin + finalCatDetailingMin) / 60).toFixed(2)
-                    }
-                    onChange={(e) =>
-                      handleInputChange(
-                        setCatTotalHoursOverrides,
-                        category,
-                        e.target.value,
-                      )
-                    }
-                  />
-                </td>
-              </>
+              <td
+                rowSpan={items.length}
+                className="input-cell editable merged-input"
+              >
+                <input
+                  type="number"
+                  value={
+                    sCatTotalHoursOverrides[category] !== undefined
+                      ? sCatTotalHoursOverrides[category]
+                      : ((catModelMinCalc + catDetailingMinCalc) / 60).toFixed(2)
+                  }
+                  onChange={(e) =>
+                    handleInputChange(
+                      "catTotalHoursOverrides",
+                      category,
+                      e.target.value,
+                    )
+                  }
+                />
+              </td>
             )}
           </tr>
         );
@@ -334,83 +277,55 @@ const EstimationCalculator = ({
     });
   };
 
-  // Compute Current Step Values
-  const bodyContent = renderTableBody(); // Calculates grandTotalModelMin / grandTotalDetailingMin
-  const currentHours = (grandTotalModelMin + grandTotalDetailingMin) / 60;
-  const currentPrice = currentHours * projectRate;
-
-  // Compute Accumulated Totals
-  const accumHours = savedSteps.reduce((sum, step) => sum + step.hours, 0);
-  const accumPrice = savedSteps.reduce((sum, step) => sum + step.price, 0);
-
-  const totalProjectHours = accumHours + currentHours;
-  const totalProjectPrice = accumPrice + currentPrice;
+  const bodyContent = renderTableBody();
 
   const handleNext = () => {
-    // Save current step data
-    setSavedSteps((prev) => [
-      ...prev,
-      {
-        stepName: currentStepName,
-        hours: parseFloat(currentHours.toFixed(2)),
-        price: parseFloat(currentPrice.toFixed(2)),
-      },
-    ]);
+    const nextNum = availableSteps.length + 1;
+    const nextStepName = `S-1.${nextNum}`;
 
-    // Reset inputs
-    setCounts({});
-    setModelOverrides({});
-    setDetailingOverrides({});
-    setTimeMinOverrides({});
-    setCatModelingOverrides({});
-    setCatDetailingOverrides({});
-    setCatTotalHoursOverrides({});
-
-    // Advance step
-    const nextStep = currentStep + 1;
-    setCurrentStep(nextStep);
-    setCurrentStepName(`S-1.${nextStep}`);
+    if (!availableSteps.includes(nextStepName)) {
+      setAvailableSteps((prev) => [...prev, nextStepName]);
+      setStepsData((prev) => ({
+        ...prev,
+        [nextStepName]: {
+          counts: {},
+          catTotalHoursOverrides: {},
+        },
+      }));
+    }
+    setCurrentStepName(nextStepName);
   };
 
   const handleSave = () => {
-    // Include the current active step in the final steps array
-    const finalSteps = [
-      ...savedSteps,
-      {
-        stepName: currentStepName,
-        hours: parseFloat(currentHours.toFixed(2)),
-        price: parseFloat(currentPrice.toFixed(2)),
-      },
-    ];
-
     if (onSave) {
       onSave({
         hours: totalProjectHours.toFixed(2),
         price: totalProjectPrice.toFixed(2),
-        steps: finalSteps,
+        steps: stepsTotals.map((s) => ({
+          stepName: s.stepName,
+          hours: parseFloat(s.hours.toFixed(2)),
+          price: parseFloat(s.price.toFixed(2)),
+        })),
       });
     }
   };
 
   return (
     <Wrapper>
-      {savedSteps.length > 0 && (
-        <div className="saved-steps-summary">
-          <h4>Completed Steps</h4>
-          <div className="steps-row">
-            {savedSteps.map((step, idx) => (
-              <span key={idx} className="step-badge">
-                <strong>{step.stepName}:</strong> {step.hours.toFixed(1)}h / $
-                {step.price.toFixed(2)}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
       <div className="sheet-name-selector">
         <label>Current Sheet (DD):</label>
-        <span className="sheet-number-display">{currentStepName}</span>
+        <div className="sheet-tabs">
+          {availableSteps.map((step) => (
+            <button
+              key={step}
+              type="button"
+              className={`sheet-tab-btn ${currentStepName === step ? "active" : ""}`}
+              onClick={() => setCurrentStepName(step)}
+            >
+              {step}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="table-container">
@@ -444,18 +359,6 @@ const EstimationCalculator = ({
               <th className="th-count" style={{ width: "80px" }}>
                 Count
               </th>
-              <th className="th-model" style={{ width: "80px" }}>
-                Model
-              </th>
-              <th className="th-detail" style={{ width: "80px" }}>
-                Detailing
-              </th>
-              <th className="th-modeling-min" style={{ width: "120px" }}>
-                Modeling (min)
-              </th>
-              <th className="th-detailing-min" style={{ width: "120px" }}>
-                Detailing (min)
-              </th>
               <th className="th-total-hours" style={{ width: "120px" }}>
                 Total Hours
               </th>
@@ -465,12 +368,8 @@ const EstimationCalculator = ({
           <tfoot>
             <tr className="footer-row">
               <td colSpan="3" className="footer-label">
-                Hours for Modeling and Detailing (Current Step)
+                Total Hours (Current Step)
               </td>
-              <td className="footer-empty"></td>
-              <td className="footer-empty"></td>
-              <td className="footer-total">{grandTotalModelMin}</td>
-              <td className="footer-total">{grandTotalDetailingMin}</td>
               <td className="footer-total-hours">{currentHours.toFixed(2)}</td>
             </tr>
           </tfoot>
@@ -482,17 +381,31 @@ const EstimationCalculator = ({
           <div className="footer-stats">
             <div className="stat">
               <span className="stat-label">Total Hours (All Steps):</span>
-              <span className="stat-value">{totalProjectHours.toFixed(2)}</span>
+              <span className="stat-value">
+                {isDemo && !hasSubmitted ? "0.00" : totalProjectHours.toFixed(2)}
+              </span>
             </div>
             <div className="stat">
               <span className="stat-label">Project Rate:</span>
-              <span className="stat-value">${projectRate}/hr</span>
+              <div className="rate-input-wrapper">
+                <span>$</span>
+                <input
+                  type="number"
+                  value={rate}
+                  onChange={(e) => {
+                    if (isDemo && hasSubmitted) {
+                      setHasSubmitted(false);
+                    }
+                    setRate(parseFloat(e.target.value) || 0);
+                  }}
+                />
+                <span>/hr</span>
+              </div>
             </div>
             <div className="stat highlight">
               <span className="stat-label">Grand Total Price:</span>
               <span className="stat-value">
-                $
-                {totalProjectPrice.toLocaleString(undefined, {
+                {isDemo && !hasSubmitted ? "$0.00" : "$" + totalProjectPrice.toLocaleString(undefined, {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
                 })}
@@ -501,11 +414,17 @@ const EstimationCalculator = ({
           </div>
           <div className="footer-actions">
             <button className="btn secondary-btn" onClick={handleNext}>
-              Next Step (S-1.{currentStep + 1})
+              Next Step (S-1.{availableSteps.length + 1})
             </button>
-            <button className="btn main-btn" onClick={handleSave}>
-              Save Estimation
-            </button>
+            {isDemo ? (
+              <button className="btn main-btn" onClick={handleSubmitClick}>
+                Submit
+              </button>
+            ) : (
+              <button className="btn main-btn" onClick={handleSave}>
+                Save Estimation
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -544,14 +463,25 @@ const Wrapper = styled.div`
 
     .step-badge {
       background: var(--white);
-      border: 1px solid var(--primary-200);
-      color: var(--primary-700);
+      border: 1px solid var(--grey-300);
+      color: var(--grey-700);
       padding: 0.4rem 0.8rem;
       border-radius: 50px;
       font-size: 0.85rem;
+      transition: all 0.2s ease;
+      
       strong {
         font-weight: 800;
-        color: var(--primary-900);
+        color: var(--grey-900);
+      }
+      
+      &.active {
+        border-color: var(--primary-500);
+        background: var(--primary-50);
+        color: var(--primary-700);
+        strong {
+          color: var(--primary-900);
+        }
       }
     }
   }
@@ -559,8 +489,8 @@ const Wrapper = styled.div`
   .sheet-name-selector {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
     background: var(--white);
     padding: 0.75rem 1.25rem;
     border-radius: 8px;
@@ -576,18 +506,32 @@ const Wrapper = styled.div`
       letter-spacing: 0.5px;
     }
 
-    .sheet-number-display {
-      padding: 0.5rem 0.9rem;
+    .sheet-tabs {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .sheet-tab-btn {
+      padding: 0.5rem 1rem;
       border: 1px solid var(--grey-300);
-      border-radius: 6px;
-      font-size: 0.95rem;
-      font-weight: 800;
-      color: var(--primary-700);
       background: var(--grey-50);
-      min-width: 100px;
-      text-align: center;
-      display: inline-block;
-      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+      color: var(--grey-700);
+      border-radius: 6px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      
+      &:hover {
+        background: var(--grey-100);
+        border-color: var(--grey-400);
+      }
+      
+      &.active {
+        background: var(--primary-600);
+        color: white;
+        border-color: var(--primary-600);
+        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+      }
     }
   }
 
@@ -656,7 +600,7 @@ const Wrapper = styled.div`
       padding: 0.5rem;
       font-weight: 700;
       text-align: center;
-      background-color: #ffc700; /* Default yellow */
+      background-color: #ffc700;
     }
 
     .cat-main {
@@ -664,7 +608,7 @@ const Wrapper = styled.div`
     }
 
     .cat-misc {
-      background-color: #a6c9ec !important; /* Light blue as per misc image */
+      background-color: #a6c9ec !important;
     }
 
     .vertical-text {
@@ -706,7 +650,6 @@ const Wrapper = styled.div`
           box-shadow: inset 0 0 0 2px var(--primary-500);
         }
 
-        /* Hide spin buttons */
         &::-webkit-outer-spin-button,
         &::-webkit-inner-spin-button {
           -webkit-appearance: none;
@@ -741,10 +684,6 @@ const Wrapper = styled.div`
     .footer-label {
       text-align: center;
       padding: 0.75rem;
-    }
-
-    .footer-empty {
-      background-color: var(--table-header-bg);
     }
 
     .footer-total,
@@ -814,24 +753,14 @@ const Wrapper = styled.div`
         color: var(--primary-600);
       }
     }
-
-    body.dark-theme &.highlight {
-      background: #0f1729 !important;
-      border: 1px solid #ffffff !important;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
-
-      .stat-value,
-      .stat-label {
-        color: #ffffff !important;
-      }
-    }
   }
 
   .stat-label {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
+    font-weight: 700;
     color: var(--grey-500);
     text-transform: uppercase;
-    font-weight: 700;
+    letter-spacing: 0.5px;
   }
 
   .stat-value {
@@ -840,13 +769,56 @@ const Wrapper = styled.div`
     color: var(--grey-900);
   }
 
+  .rate-input-wrapper {
+    display: flex;
+    align-items: center;
+    background: var(--grey-50);
+    border: 1px solid var(--grey-200);
+    border-radius: 8px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--grey-700);
+    transition: all 0.2s ease;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+
+    &:focus-within {
+      border-color: var(--primary-500);
+      background: var(--white);
+      box-shadow: 0 0 0 3px var(--primary-50), inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    span {
+      color: var(--grey-500);
+    }
+
+    input {
+      width: 45px;
+      border: none;
+      background: transparent;
+      color: var(--grey-900);
+      font-weight: 800;
+      text-align: center;
+      outline: none;
+      padding: 0;
+      font-size: 1rem;
+      
+      &::-webkit-outer-spin-button,
+      &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      &[type="number"] {
+        -moz-appearance: textfield;
+      }
+    }
+  }
+
   .btn.main-btn,
   .btn.secondary-btn {
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
   }
-
-
 
   body.dark-theme & {
     .saved-steps-summary {
@@ -858,6 +830,10 @@ const Wrapper = styled.div`
         border-color: #334155;
         color: #f8fafc;
         strong { color: #ffffff; }
+        &.active {
+          border-color: var(--primary-500);
+          background: rgba(37, 99, 235, 0.15);
+        }
       }
     }
 
@@ -865,10 +841,18 @@ const Wrapper = styled.div`
       background: #0f172a;
       border-color: #1e293b;
       label { color: #94a3b8; }
-      .sheet-number-display {
-        background: #020617;
+      .sheet-tab-btn {
+        background: #1e293b;
         border-color: #334155;
-        color: #ffffff;
+        color: #94a3b8;
+        &:hover {
+          background: #334155;
+        }
+        &.active {
+          background: var(--primary-600);
+          color: white;
+          border-color: var(--primary-600);
+        }
       }
     }
 
@@ -900,14 +884,11 @@ const Wrapper = styled.div`
         }
       }
       .category-cell {
-        color: #031838; /* Keep text dark for contrast on yellow/blue */
+        color: #031838;
       }
       .footer-row {
         background-color: #1e293b;
         color: #ffffff;
-      }
-      .footer-total-hours {
-        color: #60a5fa;
       }
     }
 
@@ -920,7 +901,21 @@ const Wrapper = styled.div`
     .stat-label { color: #94a3b8; }
     .stat-value { color: #ffffff; }
 
-
+    .rate-input-wrapper {
+      background: #020617;
+      border-color: #334155;
+      color: #cbd5e1;
+      
+      &:focus-within {
+        border-color: var(--primary-500);
+        background: #0f172a;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+      }
+      
+      input {
+        color: #f8fafc;
+      }
+    }
   }
 `;
 

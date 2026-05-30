@@ -13,14 +13,7 @@ import {
 import Wrapper from "../assets/Wrappers/GetInTouch";
 
 const GetInTouch = () => {
-  const [messages, setMessages] = useState([
-    {
-      id: "init-1",
-      sender: "support",
-      text: "Hello! Welcome to the Steel Bid Support Desk. How can we help you today with your estimations or company bid configurations?",
-      time: "12:00 PM",
-    },
-  ]);
+  const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
@@ -42,40 +35,58 @@ const GetInTouch = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const fetchMessages = async () => {
+    try {
+      const res = await fetch("/api/v1/messages");
+      if (res.ok) {
+        const data = await res.json();
+        setMessages(data.messages || []);
+      }
+    } catch (err) {
+      console.error("Failed to fetch messages:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchMessages();
+    const interval = setInterval(fetchMessages, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Auto-scroll when messages update or typing state changes
   useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const handleSend = (e) => {
+  const handleSend = async (e) => {
     e.preventDefault();
     if (!inputText.trim()) return;
 
-    const userMessage = {
-      id: `user-${Date.now()}`,
-      sender: "user",
-      text: inputText,
-      time: getTimeString(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
+    const text = inputText;
     setInputText("");
 
-    // Simulate Agent typing response after a short delay
-    setTimeout(() => {
-      setIsTyping(true);
+    // Optimistically add message to state
+    const tempId = `temp-${Date.now()}`;
+    const tempMsg = {
+      _id: tempId,
+      senderType: "user",
+      text,
+      time: getTimeString(),
+    };
+    setMessages((prev) => [...prev, tempMsg]);
 
-      setTimeout(() => {
-        setIsTyping(false);
-        const supportResponse = {
-          id: `support-${Date.now()}`,
-          sender: "support",
-          text: "Thank you for your message! Our operations desk has received your request. We will review it and get in touch with you shortly.",
-          time: getTimeString(),
-        };
-        setMessages((prev) => [...prev, supportResponse]);
-      }, 2000);
-    }, 1000);
+    try {
+      const res = await fetch("/api/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      if (res.ok) {
+        fetchMessages();
+      }
+    } catch (err) {
+      console.error("Failed to send message:", err);
+    }
   };
 
   const handleCopyEmail = () => {
@@ -111,15 +122,15 @@ const GetInTouch = () => {
 
             {messages.map((msg) => (
               <div
-                key={msg.id}
+                key={msg._id || msg.id}
                 className={`bubble ${
-                  msg.sender === "user" ? "bubble-user" : "bubble-support"
+                  msg.senderType === "user" ? "bubble-user" : "bubble-support"
                 }`}
               >
                 {msg.text}
                 <div className="bubble-meta">
                   <span>{msg.time}</span>
-                  {msg.sender === "user" && (
+                  {msg.senderType === "user" && (
                     <span className="ticks">
                       <FaCheckDouble size={12} />
                     </span>

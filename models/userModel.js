@@ -23,10 +23,27 @@ const userSchema = new mongoose.Schema(
       required: [true, "Please provide password"],
       minlength: 6,
     },
+    phoneNumber: {
+      type: String,
+      default: "",
+    },
+    country: {
+      type: String,
+      default: "",
+    },
+    city: {
+      type: String,
+      default: "",
+    },
     role: {
       type: String,
       enum: ["user", "admin"],
       default: "user",
+    },
+    userType: {
+      type: String,
+      enum: ["demo", "paid"],
+      default: "demo",
     },
   },
   { timestamps: true }

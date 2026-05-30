@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useContext } from "react";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { FaLock, FaEnvelope, FaCheckCircle, FaArrowRight, FaShieldAlt, FaArrowLeft } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
-import logo from "../assets/logo.svg";
+import logo from "../assets/images/logo1.png";
 import loginImg from "../assets/images/login.svg";
 import { EstimationContext } from "../context/EstimationContext";
 
 const Login = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const { loadData } = useContext(EstimationContext);
   const [errorMsg, setErrorMsg] = useState("");
@@ -39,7 +39,12 @@ const Login = () => {
       }
 
       await loadData();
-      navigate("/dashboard");
+      if (data.user && data.user.role === "admin") {
+        navigate("/superadmin");
+      } else {
+        const redirectTo = location.state?.redirectTo || "/dashboard";
+        navigate(redirectTo);
+      }
     } catch (err) {
       setErrorMsg(err.message);
     } finally {
@@ -155,15 +160,6 @@ const Login = () => {
                 {!loading && <FaArrowRight className="arrow" />}
               </button>
             </form>
-
-            <div className="divider">
-              <span>OR</span>
-            </div>
-
-            <button type="button" className="google-btn">
-              <FcGoogle className="g-icon" />
-              <span>Continue with Google</span>
-            </button>
           </div>
         </div>
       </div>

@@ -9,10 +9,10 @@ import {
   FaEdit,
   FaEye,
   FaTimes,
-  FaBuilding,
-  FaTools,
   FaCalendarAlt,
 } from "react-icons/fa";
+import { GrSteps } from "react-icons/gr";
+import { BsBuildings } from "react-icons/bs";
 import { EstimationContext } from "../context/EstimationContext";
 
 const Estimations = () => {
@@ -35,7 +35,6 @@ const Estimations = () => {
   const [bidFormData, setBidFormData] = useState({
     projectType: "Structural project",
     projectName: "",
-    memberQuantity: "",
     companyId: "",
   });
 
@@ -136,6 +135,7 @@ const Estimations = () => {
     // Navigate to create estimation page with all data
     navigate("/dashboard/estimations/create", {
       state: {
+        fromDashboard: true,
         client: clientToUse,
         bidDetails: {
           ...bidFormData,
@@ -149,7 +149,6 @@ const Estimations = () => {
     setBidFormData({
       projectType: "Structural project",
       projectName: "",
-      memberQuantity: "",
       companyId: "",
     });
   };
@@ -254,7 +253,7 @@ const Estimations = () => {
             <thead>
               <tr>
                 <th>Company ID</th>
-                <th>Company Name</th>
+                <th>Fabricator name</th>
                 <th>Job ID</th>
                 <th>Project</th>
                 <th>Date</th>
@@ -340,7 +339,7 @@ const Estimations = () => {
 
 
                   <div className="form-group">
-                    <label>Company Name</label>
+                    <label>Fabricator name</label>
                     <input
                       type="text"
                       name="companyName"
@@ -448,7 +447,7 @@ const Estimations = () => {
                 <div className="form-grid">
 
                   <div className="form-group">
-                    <label>Company Name</label>
+                    <label>Fabricator name</label>
                     <input
                       type="text"
                       name="companyName"
@@ -549,7 +548,7 @@ const Estimations = () => {
               <div className="detail-grid">
 
                 <div className="detail-item">
-                  <label>Company Name</label>
+                  <label>Fabricator name</label>
                   <p>{selectedClient.companyName}</p>
                 </div>
                 <div className="detail-item">
@@ -722,7 +721,7 @@ const Estimations = () => {
                 <div className="form-grid">
                   {!selectedClient && (
                     <div className="form-group full-width">
-                      <label>Select Company</label>
+                      <label>Select Fabricator</label>
                       <select
                         name="companyId"
                         value={bidFormData.companyId}
@@ -730,7 +729,7 @@ const Estimations = () => {
                         required
                         style={{ padding: "0.8rem", borderRadius: "8px", border: "1px solid var(--grey-300)", outline: "none", fontSize: "0.95rem", width: "100%", background: "var(--input-bg)", color: "var(--grey-900)" }}
                       >
-                        <option value="">-- Select a Company --</option>
+                        <option value="">-- Select Fabricator --</option>
                         {companies.map(c => (
                           <option key={c._id} value={c._id}>
                             {c.companyName} ({c._id ? c._id.slice(-6).toUpperCase() : ""})
@@ -756,7 +755,7 @@ const Estimations = () => {
                           onChange={handleBidChange}
                         />
                         <div className="option-content">
-                          <FaBuilding />
+                          <BsBuildings />
                           <span>Structural project</span>
                         </div>
                       </label>
@@ -773,14 +772,13 @@ const Estimations = () => {
                           onChange={handleBidChange}
                         />
                         <div className="option-content">
-                          <FaTools />
+                          <GrSteps />
                           <span>Miscellaneous project</span>
                         </div>
                       </label>
                     </div>
                   </div>
-
-                  <div className="form-group full-width">
+                  <div className="form-group">
                     <label>Project Name</label>
                     <input
                       type="text"
@@ -791,34 +789,16 @@ const Estimations = () => {
                       required
                     />
                   </div>
-
-                  <div className="form-group">
-                    <label>Member Quantity</label>
-                    <input
-                      type="number"
-                      name="memberQuantity"
-                      value={bidFormData.memberQuantity}
-                      onChange={handleBidChange}
-                      placeholder="e.g. 150"
-                      required
-                    />
-                  </div>
-
                   <div className="form-group">
                     <label>Auto-Set Info</label>
                     <div className="auto-info">
                       <span>{new Date().toLocaleDateString()}</span>
                       <span className="dot">•</span>
-                      <span>
-                        {new Date().toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
+                      <span>{new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
                     </div>
                   </div>
+                  </div>
                 </div>
-              </div>
               <div className="modal-footer">
                 <button
                   type="button"

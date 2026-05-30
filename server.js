@@ -13,6 +13,7 @@ import authRouter from "./router/authRouter.js";
 import compnayRouter from "./router/compnayRouter.js";
 import estimationRouter from "./router/estimationRouter.js";
 import adminRouter from "./router/adminRouter.js";
+import messageRouter from "./router/messageRouter.js";
 
 // Middlewares
 import { authenticateUser, authorizePermissions } from "./middleware/authMiddleware.js";
@@ -41,6 +42,7 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/compnay", authenticateUser, compnayRouter);
 app.use("/api/v1/estimations", authenticateUser, estimationRouter);
 app.use("/api/v1/admin", authenticateUser, authorizePermissions("admin"), adminRouter);
+app.use("/api/v1/messages", authenticateUser, messageRouter);
 
 // Serve the frontend index.html for all other client routes (React Router handles navigation)
 app.get("*", (req, res, next) => {

@@ -1,29 +1,22 @@
 import React from "react";
-import { SidebarWrapper } from "../assets/Wrappers/DashboardWrapper";
+import { SidebarWrapper } from "../../assets/Wrappers/DashboardWrapper";
 import {
-  FaHome,
-  FaCalculator,
-  FaFileInvoiceDollar,
   FaChartBar,
   FaTimes,
-  FaUserPlus,
-  FaEnvelope,
+  FaUsers,
+  FaArrowLeft,
+  FaCommentAlt,
 } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
-import logo from "../assets/images/logo1.png";
-import logoDark from "../assets/images/logo2.png";
+import logo from "../../assets/images/logo1.png";
+import logoDark from "../../assets/images/logo2.png";
 
-const SideNavbar = ({ showSidebar, toggleSidebar, isDarkTheme }) => {
+const SuperAdminSideNavbar = ({ showSidebar, toggleSidebar, isDarkTheme }) => {
   const links = [
-    { id: 1, text: "Stats", path: ".", icon: <FaChartBar /> },
-    { id: 2, text: "Add Company", path: "add-company", icon: <FaUserPlus /> },
-    { id: 3, text: "Estimations", path: "estimations", icon: <FaCalculator /> },
-    {
-      id: 4,
-      text: "Bid Management",
-      path: "invoices",
-      icon: <FaFileInvoiceDollar />,
-    },
+    { id: 1, text: "Overview Stats", path: ".", icon: <FaChartBar /> },
+    { id: 2, text: "User Monitor", path: "users", icon: <FaUsers /> },
+    { id: 3, text: "Demo Users", path: "demo-users", icon: <FaUsers /> },
+    { id: 4, text: "Customer", path: "customer", icon: <FaCommentAlt /> },
   ];
 
   return (
@@ -62,17 +55,12 @@ const SideNavbar = ({ showSidebar, toggleSidebar, isDarkTheme }) => {
         </div>
         <div className="sidebar-footer">
           <NavLink
-            to="contact"
+            to="/dashboard"
             className="nav-link contact-link"
-            onClick={() => {
-              if (window.innerWidth < 992) {
-                toggleSidebar();
-              }
-            }}
-            end
+            style={{ fontSize: "0.85rem" }}
           >
-            <span className="icon"><FaEnvelope /></span>
-            Get in touch with us
+            <span className="icon"><FaArrowLeft /></span>
+            Exit to User App
           </NavLink>
         </div>
       </div>
@@ -80,4 +68,4 @@ const SideNavbar = ({ showSidebar, toggleSidebar, isDarkTheme }) => {
   );
 };
 
-export default SideNavbar;
+export default SuperAdminSideNavbar;

@@ -4,7 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import Stats from "./pages/Stats";
 import Estimations from "./pages/Estimations";
 import Invoices from "./pages/Invoices";
-import CreateClient from "./pages/CreateClient";
+import CreateClient from "./pages/demo-user/CreateClient";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import LandingPage from "./pages/LandingPage";
@@ -13,8 +13,15 @@ import AddCompany from "./pages/AddCompany";
 import GetInTouch from "./pages/GetInTouch";
 import Error from "./pages/Error";
 import TotalSheetPlain from "./pages/TotalSheetPlain";
+import Pricing from "./pages/Pricing";
 import { EstimationProvider } from "./context/EstimationContext";
 import AdminDashboard from "./pages/AdminDashboard";
+import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
+import SuperAdminStats from "./pages/superadmin/SuperAdminStats";
+import SuperAdminUsers from "./pages/superadmin/SuperAdminUsers";
+import SuperAdminDemoUsers from "./pages/superadmin/SuperAdminDemoUsers";
+import SuperAdminUserDetails from "./pages/superadmin/SuperAdminUserDetails";
+import SuperAdminComplaints from "./pages/superadmin/SuperAdminComplaints";
 
 const router = createBrowserRouter([
   {
@@ -62,6 +69,16 @@ const router = createBrowserRouter([
     ],
   },
   {
+    path: "/demo-user",
+    element: <CreateClient />,
+    errorElement: <Error />,
+  },
+  {
+    path: "/pricing",
+    element: <Pricing />,
+    errorElement: <Error />,
+  },
+  {
     path: "/login",
     element: <Login />,
     errorElement: <Error />,
@@ -75,6 +92,33 @@ const router = createBrowserRouter([
     path: "/admin-dashboard",
     element: <AdminDashboard />,
     errorElement: <Error />,
+  },
+  {
+    path: "/superadmin",
+    element: <SuperAdminDashboard />,
+    errorElement: <Error />,
+    children: [
+      {
+        index: true,
+        element: <SuperAdminStats />,
+      },
+      {
+        path: "users",
+        element: <SuperAdminUsers />,
+      },
+      {
+        path: "demo-users",
+        element: <SuperAdminDemoUsers />,
+      },
+      {
+        path: "users/:id",
+        element: <SuperAdminUserDetails />,
+      },
+      {
+        path: "customer",
+        element: <SuperAdminComplaints />,
+      },
+    ],
   },
 ]);
 

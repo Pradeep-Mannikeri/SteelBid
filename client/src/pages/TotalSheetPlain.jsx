@@ -10,6 +10,11 @@ const TotalSheetPlain = () => {
   useEffect(() => {
     console.log("TotalSheetPlain Component Loaded - Version: 2.0");
   }, []);
+
+  // Ensure page scrolls to top on mount to avoid auto-focusing bottom sections
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -37,6 +42,9 @@ const TotalSheetPlain = () => {
     ...estimation,
     receivedDate: formatDateForInput(estimation?.receivedDate || formData?.bidDocReceivedDate || ""),
     bidDate: formatDateForInput(estimation?.bidDate || formData?.bidDate || ""),
+    scopeSubmittals: estimation?.scopeSubmittals || formData?.scopeSubmittals || [],
+    drawingRequirements: estimation?.drawingRequirements || formData?.drawingRequirements || [],
+    sendingBys: estimation?.sendingBys || formData?.sendingBys || [],
   });
   const [localFormData, setLocalFormData] = useState(formData || {});
   const [localClientData, setLocalClientData] = useState({
@@ -78,6 +86,16 @@ const TotalSheetPlain = () => {
 
   const handleEstimationChange = (field, value) => {
     setEstimationData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleCheckboxToggle = (field, item) => {
+    setEstimationData((prev) => {
+      const currentList = prev[field] || [];
+      const newList = currentList.includes(item)
+        ? currentList.filter((i) => i !== item)
+        : [...currentList, item];
+      return { ...prev, [field]: newList };
+    });
   };
 
   const handleFormChange = (field, value) => {
@@ -248,11 +266,23 @@ const TotalSheetPlain = () => {
               <div className="form-row">
                 <div className="form-group">
                   <label>Contact Person</label>
-                  <input type="text" placeholder="Manager Name" />
+                  <input
+                    type="text"
+                    value={estimationData.projectManager || ""}
+                    onChange={(e) => handleEstimationChange("projectManager", e.target.value)}
+                    placeholder="Manager Name"
+                    disabled={readOnly}
+                  />
                 </div>
                 <div className="form-group">
                   <label>Phone Number</label>
-                  <input type="text" placeholder="+1 XXX-XXX-XXXX" />
+                  <input
+                    type="text"
+                    value={estimationData.contactDetails || ""}
+                    onChange={(e) => handleEstimationChange("contactDetails", e.target.value)}
+                    placeholder="+1 XXX-XXX-XXXX"
+                    disabled={readOnly}
+                  />
                 </div>
               </div>
             </div>
@@ -369,6 +399,15 @@ const TotalSheetPlain = () => {
                     />
                   </div>
                   <div className="form-group full-width">
+                    <label>Scope of work reference</label>
+                    <textarea 
+                      rows="2" 
+                      value={estimationData.scopeOfWork || ""}
+                      onChange={(e) => handleEstimationChange("scopeOfWork", e.target.value)}
+                      placeholder="List scope of work reference documents..." 
+                    />
+                  </div>
+                  <div className="form-group full-width">
                     <label>Internal Remarks</label>
                     <textarea 
                       rows="2" 
@@ -376,6 +415,59 @@ const TotalSheetPlain = () => {
                       onChange={(e) => handleEstimationChange("remarks", e.target.value)}
                       placeholder="Add any internal project notes..." 
                     />
+                  </div>
+               </div>
+
+               <div className="checklists-grid">
+                  <div className="checklist-group">
+                     <h5>Scope for Submittal</h5>
+                     <div className="checklist-items">
+                        {["Shop Drawings", "Erection Drawings", "Reports", "3D Model", "Approval", "Re-Approval", "Review and Comment", "Fabrication"].map((item) => (
+                           <label key={item} className="checkbox-container">
+                              <input
+                                 type="checkbox"
+                                 checked={(estimationData.scopeSubmittals || []).includes(item)}
+                                 onChange={() => handleCheckboxToggle("scopeSubmittals", item)}
+                                 disabled={readOnly}
+                              />
+                              <span className="checkbox-label">{item}</span>
+                           </label>
+                        ))}
+                     </div>
+                  </div>
+
+                  <div className="checklist-group">
+                     <h5>Drawing Requirement</h5>
+                     <div className="checklist-items">
+                        {["Structural Detailing", "Deck Drawing", "Structural Engineering", "Structural Estimation"].map((item) => (
+                           <label key={item} className="checkbox-container">
+                              <input
+                                 type="checkbox"
+                                 checked={(estimationData.drawingRequirements || []).includes(item)}
+                                 onChange={() => handleCheckboxToggle("drawingRequirements", item)}
+                                 disabled={readOnly}
+                              />
+                              <span className="checkbox-label">{item}</span>
+                           </label>
+                        ))}
+                     </div>
+                  </div>
+
+                  <div className="checklist-group">
+                     <h5>Sending By</h5>
+                     <div className="checklist-items">
+                        {["Email", "Messenger", "FTP", "FEDEX"].map((item) => (
+                           <label key={item} className="checkbox-container">
+                              <input
+                                 type="checkbox"
+                                 checked={(estimationData.sendingBys || []).includes(item)}
+                                 onChange={() => handleCheckboxToggle("sendingBys", item)}
+                                 disabled={readOnly}
+                              />
+                              <span className="checkbox-label">{item}</span>
+                           </label>
+                        ))}
+                     </div>
                   </div>
                </div>
             </div>
@@ -709,6 +801,96 @@ const Wrapper = styled.section`
     
     .full-width {
       grid-column: 1 / -1;
+    }
+  }
+
+  .checklists-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--grey-200);
+    padding-top: 1.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .checklists-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .checklist-group {
+    background: var(--grey-50);
+    padding: 1.25rem;
+    border-radius: 12px;
+    border: 1px solid var(--grey-200);
+
+    h5 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--grey-800);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 0;
+      margin-bottom: 1rem;
+      border-bottom: 2px solid var(--primary-100);
+      padding-bottom: 0.5rem;
+    }
+  }
+
+  .checklist-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: var(--grey-700);
+    user-select: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--primary-600);
+    }
+
+    input[type="checkbox"] {
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--grey-300);
+      border-radius: 4px;
+      outline: none;
+      transition: all 0.2s ease;
+      position: relative;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      background: var(--white);
+
+      &:checked {
+        background: var(--primary-600);
+        border-color: var(--primary-600);
+
+        &::after {
+          content: "\\2713";
+          color: white;
+          font-size: 11px;
+          font-weight: bold;
+        }
+      }
+
+      &:focus-visible {
+        box-shadow: 0 0 0 3px var(--primary-100);
+      }
+    }
+
+    .checkbox-label {
+      font-weight: 500;
     }
   }
 

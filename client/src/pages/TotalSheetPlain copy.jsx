@@ -375,6 +375,21 @@ const TotalSheetPlain = () => {
               </td>
             </tr>
 
+            {/* Scope of Work Reference */}
+            <tr>
+              <td className="label-cell center">
+                Scope of Work Reference
+              </td>
+              <td colSpan="3">
+                <textarea
+                  className="sheet-textarea"
+                  placeholder="List scope of work reference documents..."
+                  value={estimationData.scopeOfWork || ""}
+                  onChange={(e) => handleEstimationChange("scopeOfWork", e.target.value)}
+                ></textarea>
+              </td>
+            </tr>
+
             {/* Remark and Signature */}
             <tr>
               <td className="label-cell center">

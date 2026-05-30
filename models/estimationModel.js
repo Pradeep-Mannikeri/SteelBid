@@ -57,6 +57,42 @@ const estimationSchema = new mongoose.Schema(
       enum: ["Draft", "In Progress", "Review", "Completed", "Under Bidding"],
       default: "Draft",
     },
+    exclusions: {
+      type: String,
+      default: "",
+    },
+    inclusions: {
+      type: String,
+      default: "",
+    },
+    remarks: {
+      type: String,
+      default: "",
+    },
+    scopeOfWork: {
+      type: String,
+      default: "",
+    },
+    scopeSubmittals: {
+      type: [String],
+      default: [],
+    },
+    drawingRequirements: {
+      type: [String],
+      default: [],
+    },
+    sendingBys: {
+      type: [String],
+      default: [],
+    },
+    projectManager: {
+      type: String,
+      default: "",
+    },
+    contactDetails: {
+      type: String,
+      default: "",
+    },
     steps: [stepSchema],
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

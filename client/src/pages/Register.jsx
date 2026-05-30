@@ -1,35 +1,65 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
-import { FaLock, FaEnvelope, FaUser, FaCheckCircle, FaArrowRight, FaShieldAlt, FaArrowLeft } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
-import logo from "../assets/logo.svg";
+import { useNavigate, useLocation } from "react-router-dom";
+import { FaLock, FaEnvelope, FaUser, FaCheckCircle, FaArrowRight, FaShieldAlt, FaArrowLeft, FaPhone, FaGlobe, FaMapMarkerAlt } from "react-icons/fa";
+import { Country, City } from "country-state-city";
+import { getCountryFromCountryName } from "country-codes-flags-phone-codes";
+import logo from "../assets/images/logo1.png";
 import illustration from "../assets/images/singup.svg";
+import { EstimationContext } from "../context/EstimationContext";
 
 const Register = () => {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  const location = useLocation();
+  const purchasedPlan = location.state?.plan || "";
+  const { loadData } = useContext(EstimationContext);
+  const [formData, setFormData] = useState({ name: "", email: "", password: "", phoneNumber: "", country: "", city: "" });
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Explicitly ensure the body does NOT have dark-theme on this page
+  // Retrieve sorted list of countries
+  const countriesList = Country.getAllCountries().sort((a, b) => a.name.localeCompare(b.name));
+
+  // Find the selected country object
+  const selectedCountryObj = countriesList.find(c => c.name === formData.country);
+
+  // Retrieve unique sorted list of cities for the selected country
+  const availableCities = selectedCountryObj 
+    ? Array.from(new Set(City.getCitiesOfCountry(selectedCountryObj.isoCode).map(city => city.name))).sort()
+    : [];
+
   useEffect(() => {
     document.body.classList.remove("dark-theme");
   }, []);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === "country") {
+      const countryObj = getCountryFromCountryName(value);
+      const phoneCode = countryObj ? `${countryObj.dialCode} ` : "";
+      setFormData({ ...formData, country: value, city: "", phoneNumber: phoneCode });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.country || !formData.city) {
+      setErrorMsg("Please select both Country and City");
+      return;
+    }
     setLoading(true);
     setErrorMsg("");
     try {
+      const payload = {
+        ...formData,
+        userType: purchasedPlan ? "paid" : "demo",
+      };
       const res = await fetch("/api/v1/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -42,12 +72,13 @@ const Register = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: formData.email, password: formData.password }),
       });
-      const loginData = await loginRes.json();
+      const loginData = await loginRes.ok ? await loginRes.json() : null;
       if (!loginRes.ok) {
-        throw new Error(loginData.msg || "Login failed after registration");
+        throw new Error(loginData?.msg || "Login failed after registration");
       }
-
-      navigate("/dashboard");
+      await loadData();
+      const redirectTo = location.state?.redirectTo || "/dashboard";
+      navigate(redirectTo);
     } catch (err) {
       setErrorMsg(err.message);
     } finally {
@@ -113,6 +144,23 @@ const Register = () => {
               <span className="step-label">Get Started</span>
               <h3>Create Your Account</h3>
               <p>Join thousands of professionals using Steel Bid.</p>
+              {purchasedPlan && (
+                <div style={{
+                  background: "rgba(16, 185, 129, 0.15)",
+                  color: "#10b981",
+                  border: "1px solid #10b981",
+                  borderRadius: "8px",
+                  padding: "0.75rem 1rem",
+                  marginTop: "1rem",
+                  fontSize: "0.9rem",
+                  fontWeight: "700",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem"
+                }}>
+                  <FaCheckCircle /> {purchasedPlan} Plan Activated! Complete signup to start quoting.
+                </div>
+              )}
               {errorMsg && (
                 <div style={{ color: "#f87171", background: "rgba(239, 68, 68, 0.1)", padding: "0.75rem", borderRadius: "5px", marginTop: "1rem", fontSize: "0.9rem", fontWeight: "700" }}>
                   {errorMsg}
@@ -121,48 +169,112 @@ const Register = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="register-form">
-              <div className="input-group">
-                <label>Full Name</label>
-                <div className="field-wrap">
-                  <FaUser className="field-icon" />
-                  <input
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="e.g. John Wick"
-                    required
-                  />
+              <div className="form-row">
+                <div className="input-group">
+                  <label>Full Name</label>
+                  <div className="field-wrap">
+                    <FaUser className="field-icon" />
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="e.g. John Wick"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="input-group">
+                  <label>Work Email</label>
+                  <div className="field-wrap">
+                    <FaEnvelope className="field-icon" />
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="name@company.com"
+                      required
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="input-group">
-                <label>Work Email</label>
-                <div className="field-wrap">
-                  <FaEnvelope className="field-icon" />
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="name@company.com"
-                    required
-                  />
+              <div className="form-row">
+                <div className="input-group">
+                  <label>Country</label>
+                  <div className="field-wrap">
+                    <FaGlobe className="field-icon" />
+                    <select
+                      name="country"
+                      value={formData.country}
+                      onChange={handleChange}
+                      required
+                    >
+                      <option value="" disabled>Select Country</option>
+                      {countriesList.map((country) => (
+                        <option key={country.name} value={country.name}>
+                          {country.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="input-group">
+                  <label>City</label>
+                  <div className="field-wrap">
+                    <FaMapMarkerAlt className="field-icon" />
+                    <select
+                      name="city"
+                      value={formData.city}
+                      onChange={handleChange}
+                      disabled={!formData.country}
+                      required
+                    >
+                      <option value="" disabled>
+                        {formData.country ? "Select City" : "Select Country first"}
+                      </option>
+                      {availableCities.map((city) => (
+                        <option key={city} value={city}>
+                          {city}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
 
-              <div className="input-group">
-                <label>Password</label>
-                <div className="field-wrap">
-                  <FaLock className="field-icon" />
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder="Create a strong password"
-                    required
-                  />
+              <div className="form-row">
+                <div className="input-group">
+                  <label>Mobile Number</label>
+                  <div className="field-wrap">
+                    <FaPhone className="field-icon" style={{ transform: "scaleX(-1)" }} />
+                    <input
+                      type="tel"
+                      name="phoneNumber"
+                      value={formData.phoneNumber}
+                      onChange={handleChange}
+                      placeholder="e.g. +1 (555) 000-0000"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="input-group">
+                  <label>Password</label>
+                  <div className="field-wrap">
+                    <FaLock className="field-icon" />
+                    <input
+                      type="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      placeholder="Create a strong password"
+                      required
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -171,15 +283,6 @@ const Register = () => {
                 {!loading && <FaArrowRight className="arrow" />}
               </button>
             </form>
-
-            <div className="divider">
-              <span>OR</span>
-            </div>
-
-            <button type="button" className="google-btn">
-              <FcGoogle className="g-icon" />
-              <span>Continue with Google</span>
-            </button>
           </div>
         </div>
       </div>
@@ -297,16 +400,18 @@ const Wrapper = styled.div`
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 3rem;
+    padding: 1.5rem;
     background: #031838;
     color: white;
     height: 100%;
+    overflow-y: auto;
     position: relative;
   }
 
   .form-container {
     width: 100%;
-    max-width: 400px;
+    max-width: 580px;
+    margin: auto 0;
   }
 
   .back-btn {
@@ -357,6 +462,19 @@ const Wrapper = styled.div`
     }
   }
 
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+
+  @media (max-width: 600px) {
+    .form-row {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+  }
+
   .input-group {
     margin-bottom: 1.25rem;
 
@@ -381,7 +499,7 @@ const Wrapper = styled.div`
       font-size: 1rem;
     }
 
-    input {
+    input, select {
       width: 100%;
       padding: 0.9rem 1.25rem 0.9rem 2.75rem;
       border: none;
@@ -395,6 +513,21 @@ const Wrapper = styled.div`
         background: #334155;
         box-shadow: 0 0 0 3px rgba(240, 120, 26, 0.1);
       }
+    }
+
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      background-size: 1.2em;
+      padding-right: 2.5rem;
+      cursor: pointer;
+    }
+
+    option {
+      background: #1e293b;
+      color: #ffffff;
     }
   }
 

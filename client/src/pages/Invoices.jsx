@@ -405,14 +405,14 @@ const Invoices = () => {
                           <label>Contact Person</label>
                           <span className="field-val">
                             <FaUser className="field-ico" />
-                            {companyInfo?.contactPerson || selectedBidForView.originalData?.contactPerson || "N/A"}
+                            {companyInfo?.contactPerson || selectedBidForView.originalData?.contactPerson || selectedBidForView.originalData?.projectManager || "N/A"}
                           </span>
                         </div>
                         <div className="modal-field-group">
                           <label>Phone Number</label>
                           <span className="field-val">
                             <FaPhone className="field-ico" style={{ transform: 'scaleX(-1)' }} />
-                            {companyInfo?.phone || companyInfo?.contactNumber || selectedBidForView.originalData?.phone || "N/A"}
+                            {companyInfo?.phone || companyInfo?.contactNumber || selectedBidForView.originalData?.phone || selectedBidForView.originalData?.contactDetails || "N/A"}
                           </span>
                         </div>
                       </div>
@@ -482,6 +482,10 @@ const Invoices = () => {
                       <div className="scope-box">
                         <label>Exclusions</label>
                         <p className="scope-text">{selectedBidForView.originalData?.exclusions || "No exclusions specified."}</p>
+                      </div>
+                      <div className="scope-box">
+                        <label>Scope of Work Reference</label>
+                        <p className="scope-text">{selectedBidForView.originalData?.scopeOfWork || "No scope of work reference specified."}</p>
                       </div>
                       <div className="scope-box remark">
                         <label>Internal Remarks</label>

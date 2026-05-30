@@ -685,12 +685,12 @@ const Wrapper = styled.div`
     }
 
     .icon-box {
-      width: 46px;
-      height: 46px;
+      width: 58px;
+      height: 58px;
       border-radius: var(--radius);
       display: grid;
       place-items: center;
-      font-size: 1.25rem;
+      font-size: 1.75rem;
       font-weight: 900;
       align-self: flex-start;
       background: var(--grey-50);
