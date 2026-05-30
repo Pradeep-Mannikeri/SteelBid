@@ -59,11 +59,12 @@ export const login = async (req, res) => {
 };
 
 export const logout = async (req, res) => {
-  res.cookie("token", "logout", {
+  res.cookie("token", "", {
     httpOnly: true,
-    expires: new Date(Date.now()),
+    expires: new Date(0),
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    path: "/",
   });
   res.status(StatusCodes.OK).json({ msg: "user logged out!" });
 };

@@ -17,7 +17,7 @@ import logo from "../assets/images/logo1.png";
 import logoDark from "../assets/images/logo2.png";
 
 const AdminDashboard = () => {
-  const { currentUser, loading: userLoading } = useContext(EstimationContext);
+  const { currentUser, loading: userLoading, logoutUser } = useContext(EstimationContext);
   const navigate = useNavigate();
   
   const [stats, setStats] = useState(null);
@@ -78,12 +78,8 @@ const AdminDashboard = () => {
   }, [currentUser]);
 
   const handleLogout = async () => {
-    try {
-      await fetch("/api/v1/auth/logout");
-      navigate("/login");
-    } catch (err) {
-      console.error("Logout failed:", err);
-    }
+    await logoutUser();
+    navigate("/");
   };
 
   const handleRoleToggle = async (userId, currentRole) => {

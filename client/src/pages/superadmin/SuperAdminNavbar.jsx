@@ -1,17 +1,15 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { NavbarWrapper } from '../../assets/Wrappers/DashboardWrapper';
 import { FaAlignLeft, FaSun, FaMoon, FaShieldAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
+import { EstimationContext } from '../../context/EstimationContext';
 
 const SuperAdminNavbar = ({ toggleSidebar, isDarkTheme, toggleTheme }) => {
   const navigate = useNavigate();
+  const { logoutUser } = useContext(EstimationContext);
 
   const handleLogout = async () => {
-    try {
-      await fetch("/api/v1/auth/logout");
-    } catch (err) {
-      console.error("Logout failed:", err);
-    }
+    await logoutUser();
     navigate("/");
   };
 

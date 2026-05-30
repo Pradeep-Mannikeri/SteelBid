@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { useNavigate, useLocation } from "react-router-dom";
 import EstimationCalculator from "../../components/EstimationCalculator";
 import { EstimationContext } from "../../context/EstimationContext";
-import { FaArrowLeft, FaCalendarAlt, FaClipboardList, FaProjectDiagram, FaUserTie, FaSignOutAlt, FaTimes, FaDollarSign, FaLock, FaExclamationCircle } from "react-icons/fa";
+import { FaArrowLeft, FaCalendarAlt, FaClipboardList, FaProjectDiagram, FaUserTie, FaSignOutAlt, FaTimes, FaDollarSign, FaLock, FaExclamationCircle, FaPlus } from "react-icons/fa";
 import { BsBuildings } from "react-icons/bs";
 import { GrSteps } from "react-icons/gr";
 
@@ -17,7 +17,7 @@ const CreateClient = () => {
     return !sessionStorage.getItem("demoBidFilled");
   });
 
-  const { addEstimation, companies, estimations, currentUser, loading } = useContext(EstimationContext);
+  const { addEstimation, companies, estimations, currentUser, loading, logoutUser } = useContext(EstimationContext);
   const [demoLimit, setDemoLimit] = useState(5);
   const [demoUsageCount, setDemoUsageCount] = useState(() => {
     return parseInt(localStorage.getItem("demoEstimationsCount") || "0", 10);
@@ -117,10 +117,15 @@ const CreateClient = () => {
     navigate("/");
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await logoutUser();
+    navigate("/");
+  };
+
+  const handleNewBid = () => {
     sessionStorage.removeItem("demoBidFilled");
     sessionStorage.removeItem("demoBidFormData");
-    navigate("/");
+    window.location.reload();
   };
 
   const handleCreateBid = async (e) => {
@@ -361,10 +366,10 @@ const CreateClient = () => {
               <button 
                 type="button" 
                 className="btn outline-btn" 
-                onClick={() => navigate("/login", { state: { redirectTo: "/demo-user" } })}
+                onClick={() => navigate("/")}
                 style={{ width: "100%", padding: "0.85rem", fontWeight: "700" }}
               >
-                Sign In to Account
+                Go to Home Page
               </button>
             ) : (
               <button 
@@ -532,6 +537,21 @@ const CreateClient = () => {
           )}
           {isDemoRoute && (
             <div style={{ display: "flex", gap: "1rem", marginLeft: "auto" }}>
+              <button 
+                type="button" 
+                className="logout-btn" 
+                onClick={handleNewBid}
+                style={{ 
+                  borderColor: "var(--cat-green-text)", 
+                  color: "var(--cat-green-text)", 
+                  background: "var(--cat-green)", 
+                  display: "flex", 
+                  alignItems: "center", 
+                  gap: "0.5rem" 
+                }}
+              >
+                <FaPlus /> New Bid
+              </button>
               <button 
                 type="button" 
                 className="logout-btn" 

@@ -6,14 +6,10 @@ import { EstimationContext } from '../context/EstimationContext';
 
 const Navbar = ({ toggleSidebar, isDarkTheme, toggleTheme }) => {
   const navigate = useNavigate();
-  const { currentUser } = useContext(EstimationContext);
+  const { currentUser, logoutUser } = useContext(EstimationContext);
 
   const handleLogout = async () => {
-    try {
-      await fetch("/api/v1/auth/logout");
-    } catch (err) {
-      console.error("Logout failed:", err);
-    }
+    await logoutUser();
     navigate("/");
   };
 

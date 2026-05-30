@@ -167,6 +167,19 @@ export const EstimationProvider = ({ children }) => {
     }
   };
 
+  const logoutUser = async () => {
+    try {
+      await fetch("/api/v1/auth/logout");
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
+    setCurrentUser(null);
+    setEstimations([]);
+    setCompanies([]);
+    sessionStorage.removeItem("demoBidFilled");
+    sessionStorage.removeItem("demoBidFormData");
+  };
+
   return (
     <EstimationContext.Provider
       value={{
@@ -182,6 +195,7 @@ export const EstimationProvider = ({ children }) => {
         addCompany,
         updateCompany,
         deleteCompany,
+        logoutUser,
       }}
     >
       {children}

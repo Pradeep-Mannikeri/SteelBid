@@ -4,11 +4,17 @@ export const validateRegisterInput = (req, res, next) => {
   const { name, email, password, phoneNumber, country, city } = req.body;
   const errors = [];
 
-  if (!name || typeof name !== "string" || name.trim().length < 3 || name.trim().length > 50) {
+  if (
+    !name ||
+    typeof name !== "string" ||
+    name.trim().length < 3 ||
+    name.trim().length > 50
+  ) {
     errors.push("Name must be between 3 and 50 characters long");
   }
 
-  const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  const emailRegex =
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   if (!email || !emailRegex.test(email)) {
     errors.push("Please provide a valid email address");
   }
@@ -17,7 +23,11 @@ export const validateRegisterInput = (req, res, next) => {
     errors.push("Password must be at least 6 characters long");
   }
 
-  if (!phoneNumber || typeof phoneNumber !== "string" || phoneNumber.trim() === "") {
+  if (
+    !phoneNumber ||
+    typeof phoneNumber !== "string" ||
+    phoneNumber.trim() === ""
+  ) {
     errors.push("Phone number is required");
   }
 
@@ -40,7 +50,8 @@ export const validateLoginInput = (req, res, next) => {
   const { email, password } = req.body;
   const errors = [];
 
-  const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  const emailRegex =
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   if (!email || !emailRegex.test(email)) {
     errors.push("Please provide a valid email address");
   }
@@ -60,7 +71,11 @@ export const validateCompanyInput = (req, res, next) => {
   const { companyName, location } = req.body;
   const errors = [];
 
-  if (!companyName || typeof companyName !== "string" || companyName.trim() === "") {
+  if (
+    !companyName ||
+    typeof companyName !== "string" ||
+    companyName.trim() === ""
+  ) {
     errors.push("Company Name is required");
   }
 
@@ -83,7 +98,11 @@ export const validateEstimationInput = (req, res, next) => {
     errors.push("Estimation ID/Number is required");
   }
 
-  if (!companyName || typeof companyName !== "string" || companyName.trim() === "") {
+  if (
+    !companyName ||
+    typeof companyName !== "string" ||
+    companyName.trim() === ""
+  ) {
     errors.push("Company Name is required");
   }
 
